@@ -33,6 +33,16 @@ export function PaginationControls({
 const showLeftEllipsis = totalPages > 3 && currentPage > 2;
 const showRightEllipsis = totalPages > 3 && currentPage < totalPages - 1;
 
+        const width = window.innerWidth;
+
+      if (width < 640) setPageSize(5);         // sm
+      else if (width < 768) setPageSize(8);    // md
+      else if (width < 1024) setPageSize(10);  // lg
+      else if (width < 1280) setPageSize(12);  // xl
+      else if (width < 1536) setPageSize(15);  // 2xl
+      else setPageSize(18);                    // > 2xl
+
+
   return (
     <Pagination>
       <PaginationContent>
