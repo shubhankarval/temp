@@ -20,27 +20,18 @@ export function PaginationControls({
   onPageChange,
 }: PaginationControlsProps) {
   const pagesToShow = () => {
-    const pages = [];
+  if (totalPages <= 3) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+  
+  // Always show 3 pages, centered around current page when possible
+  if (currentPage === 1) return [1, 2, 3];
+  if (currentPage === totalPages) return [totalPages - 2, totalPages - 1, totalPages];
+  return [currentPage - 1, currentPage, currentPage + 1];
+};
 
-    if (totalPages <= 3) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 2) {
-        pages.push(1, 2, 3);
-      } else if (currentPage >= totalPages - 1) {
-        pages.push(totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(currentPage - 1, currentPage, currentPage + 1);
-      }
-    }
-
-    return pages;
-  };
-
-  const showLeftEllipsis = currentPage > 2;
-  const showRightEllipsis = currentPage < totalPages - 1;
+const showLeftEllipsis = totalPages > 3 && currentPage > 2;
+const showRightEllipsis = totalPages > 3 && currentPage < totalPages - 1;
 
   return (
     <Pagination>
