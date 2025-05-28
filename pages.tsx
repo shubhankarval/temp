@@ -46,16 +46,9 @@ const showRightEllipsis = totalPages > 3 && currentPage < totalPages - 1;
         </PaginationItem>
 
         {showLeftEllipsis && (
-          <>
-            <PaginationItem>
-              <PaginationLink href="#" onClick={() => onPageChange(1)}>
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-          </>
+          <PaginationItem>
+            <PaginationEllipsis />
+          </PaginationItem>
         )}
 
         {pagesToShow().map((page) => (
@@ -71,16 +64,9 @@ const showRightEllipsis = totalPages > 3 && currentPage < totalPages - 1;
         ))}
 
         {showRightEllipsis && (
-          <>
-            <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#" onClick={() => onPageChange(totalPages)}>
-                {totalPages}
-              </PaginationLink>
-            </PaginationItem>
-          </>
+          <PaginationItem>
+            <PaginationEllipsis />
+          </PaginationItem>
         )}
 
         <PaginationItem>
