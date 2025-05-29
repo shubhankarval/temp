@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 const ZoomableCanvas = () => {
   return (
-    <div className="w-full h-screen bg-gray-100 p-4">
+    <div className="w-full h-96 sm:h-[500px] md:h-[600px] lg:h-[700px] xl:h-[800px] 2xl:h-screen bg-gray-100 p-4">
       <div className="w-full max-w-6xl mx-auto h-full">
         <h1 className="text-2xl font-bold mb-4 text-gray-800">Zoomable Canvas</h1>
         
