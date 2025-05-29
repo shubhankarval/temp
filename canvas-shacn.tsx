@@ -16,10 +16,16 @@ const ZoomableCanvas = () => {
             initialScale={1}
             minScale={0.1}
             maxScale={5}
-            wheel={{ step: 0.1 }}
+            wheel={{ 
+              step: 0.1,
+              wheelDisabled: false,
+              touchPadDisabled: false
+            }}
             pinch={{ step: 5 }}
             doubleClick={{ disabled: false, step: 0.7 }}
             centerOnInit={true}
+            limitToBounds={false}
+            disablePadding={true}
           >
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
