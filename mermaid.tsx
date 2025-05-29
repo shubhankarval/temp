@@ -1,95 +1,52 @@
-// components/MermaidViewer.tsx
-import React, { useEffect, useRef, useState } from "react"
-import mermaid from "mermaid"
-import panzoom from "panzoom"
-import { Button } from "@/components/ui/button"
-import { Fullscreen, Minimize } from "lucide-react"
-import clsx from "clsx"
+// components/Mermaid.tsx
+import React, { useEffect, useRef } from 'react';
+import mermaid from 'mermaid';
 
-interface MermaidViewerProps {
-  chart: string // Mermaid diagram code
+interface MermaidProps {
+  chart: string;
 }
 
-export const MermaidViewer: React.FC<MermaidViewerProps> = ({ chart }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const svgRef = useRef<HTMLDivElement>(null)
-  const [fullscreen, setFullscreen] = useState(false)
+const Mermaid: React.FC<MermaidProps> = ({ chart }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    mermaid.initialize({ startOnLoad: false })
-
-    const renderMermaid = async () => {
+    if (containerRef.current) {
       try {
-        const { svg } = await mermaid.render("mermaid-diagram", chart)
-        if (svgRef.current) {
-          svgRef.current.innerHTML = svg
-        }
-      } catch (err) {
-        console.error("Mermaid render error:", err)
+        mermaid.initialize({ startOnLoad: false });
+        mermaid.render('generatedDiagram', chart, (svgCode) => {
+          containerRef.current!.innerHTML = svgCode;
+        });
+      } catch (error) {
+        console.error('Error rendering Mermaid chart:', error);
       }
     }
+  }, [chart]);
 
-    renderMermaid()
-  }, [chart])
+  return <div ref={containerRef} />;
+};
 
-  useEffect(() => {
-    if (svgRef.current) {
-      const instance = panzoom(svgRef.current.querySelector("svg") as SVGSVGElement, {
-        smoothScroll: false,
-        maxZoom: 5,
-        minZoom: 0.5,
-      })
-
-      return () => {
-        instance.dispose()
-      }
-    }
-  }, [chart])
-
-  return (
-    <div
-      ref={containerRef}
-      className={clsx(
-        "relative bg-white border rounded shadow overflow-hidden",
-        fullscreen ? "fixed inset-0 z-50 bg-white" : "w-full max-w-3xl h-[500px]"
-      )}
-    >
-      <div className="absolute top-2 right-2 z-10 flex gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setFullscreen((prev) => !prev)}
-        >
-          {fullscreen ? <Minimize size={16} /> : <Fullscreen size={16} />}
-        </Button>
-      </div>
-
-      <div className="w-full h-full overflow-hidden">
-        <div
-          ref={svgRef}
-          className="w-full h-full flex items-center justify-center cursor-move"
-        />
-      </div>
-    </div>
-  )
-}
+export default Mermaid;
 
 
-// Example usage
-import { MermaidViewer } from "@/components/MermaidViewer"
+// pages/DiagramPage.tsx or any component
+import React from 'react';
+import Mermaid from './components/Mermaid';
 
 const diagram = `
-graph TD;
+  graph TD;
     A-->B;
     A-->C;
     B-->D;
     C-->D;
-`
+`;
 
-export default function Page() {
+const DiagramPage: React.FC = () => {
   return (
     <div className="p-4">
-      <MermaidViewer chart={diagram} />
+      <h1 className="text-xl font-bold mb-4">Mermaid Diagram</h1>
+      <Mermaid chart={diagram} />
     </div>
-  )
-}
+  );
+};
+
+export default DiagramPage;
