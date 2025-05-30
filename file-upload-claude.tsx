@@ -40,13 +40,24 @@ const CobolFileUpload = () => {
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } = useDropzone({
+  const { getRootProps, getInputProps, isDragActive, acceptedFiles, fileRejections } = useDropzone({
     onDrop,
     accept: {
-      'text/plain': ['.cbl', '.cpy']
+      'application/x-cobol': ['.cbl'],
+      'application/x-copybook': ['.cpy']
     },
     maxFiles: 1,
-    multiple: false
+    multiple: false,
+    validator: (file) => {
+      const fileName = file.name.toLowerCase();
+      if (!fileName.endsWith('.cbl') && !fileName.endsWith('.cpy')) {
+        return {
+          code: 'invalid-file-type',
+          message: 'Only .cbl and .cpy files are allowed'
+        };
+      }
+      return null;
+    }
   });
 
   const handleListSelection = (fileName: string) => {
@@ -215,6 +226,15 @@ const CobolFileUpload = () => {
                         ({formatFileSize(acceptedFiles[0].size)}) • Ready to upload
                       </span>
                     </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {fileRejections.length > 0 && (
+                <Alert variant="destructive">
+                  <X className="h-4 w-4" />
+                  <AlertDescription>
+                    {fileRejections[0].errors[0].message}
                   </AlertDescription>
                 </Alert>
               )}
