@@ -273,3 +273,8 @@ const CobolFileUpload = () => {
 };
 
 export default CobolFileUpload;
+
+      // Remove file extension (.cbl or .cpy)
+      const nameWithoutExtension = fileName.replace(/\.(cbl|cpy)$/i, '');
+      setProgramName(nameWithoutExtension);
+
