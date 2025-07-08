@@ -1,6 +1,34 @@
+import { ChevronDown, ChevronUp } from 'lucide-react';
+
 // Option 2: Modern Dark Gradient
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [needsToggle, setNeedsToggle] = useState(false);
+  const contentRef = useRef(null);
+  const maxHeight = 200; // Maximum height in pixels before showing toggle
+
+  useEffect(() => {
+    if (contentRef.current) {
+      const fullHeight = contentRef.current.scrollHeight;
+      setNeedsToggle(fullHeight > maxHeight);
+    }
+  }, []);
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
+
 const HeaderOption2 = () => (
   <Card className="border-0 shadow-lg bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white">
+          <div 
+        ref={contentRef}
+        className={`transition-all duration-300 ease-in-out overflow-hidden ${
+          isExpanded ? 'max-h-none' : `max-h-[${maxHeight}px]`
+        }`}
+        style={{ 
+          maxHeight: isExpanded ? 'none' : `${maxHeight}px`
+        }}
+      >
+
     <CardHeader className="pb-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -32,6 +60,23 @@ const HeaderOption2 = () => (
         </div>
       </div>
     </CardHeader>
+            </div>
+                  {needsToggle && (
+        <div className="px-6 pb-4">
+          <button
+            onClick={toggleExpanded}
+            className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors duration-200 text-sm font-medium group"
+          >
+            <span>{isExpanded ? 'See less' : 'See more'}</span>
+            {isExpanded ? (
+              <ChevronUp className="w-4 h-4 group-hover:transform group-hover:-translate-y-0.5 transition-transform duration-200" />
+            ) : (
+              <ChevronDown className="w-4 h-4 group-hover:transform group-hover:translate-y-0.5 transition-transform duration-200" />
+            )}
+          </button>
+        </div>
+      )}
+
   </Card>
 );
 
