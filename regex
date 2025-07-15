@@ -1,2 +1,7 @@
-await waitFor\(\(\) => \{[\s\S]*?\},\s*([^)]*)\)
-await waitFor($1, { timeout: 3000 })
+await waitFor\(\(\) => \{([\s\S]*?)\},\s*([^)]*)\)
+await waitFor(() => {$1}, { timeout: 3000, $2 })
+
+await waitFor\(\(\) => \{\s*([\s\S]*?)\s*\},\s*([^)]*)\)
+await waitFor(() => {
+    $1
+}, { timeout: 3000, $2 })
