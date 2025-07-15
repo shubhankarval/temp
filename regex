@@ -1,1 +1,2 @@
-await\s+waitFor\(\s*(\([^\)]*\)\s*=>\s*{[^}]*})\s*\)
+await waitFor\((.*?)\)
+await waitFor($1, { timeout: 3000 })
