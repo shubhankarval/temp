@@ -1,24 +1,21 @@
+// ProxyController.java
 package com.example.proxy.controller;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import com.example.proxy.service.ProxyService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Enumeration;
 
 @RestController
 @RequestMapping("/api/proxy")
 public class ProxyController {
 
-    @Value("${backend.url}")
-    private String backendUrl;
+    private final ProxyService proxyService;
 
-    private final RestTemplate restTemplate;
-
-    public ProxyController(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
+    public ProxyController(ProxyService proxyService) {
+        this.proxyService = proxyService;
     }
 
     @GetMapping("/**")
@@ -26,10 +23,44 @@ public class ProxyController {
             HttpServletRequest request,
             @RequestHeader HttpHeaders headers) {
         
-        String path = extractPath(request);
-        String queryString = request.getQueryString();
-        String targetUrl = backendUrl + path + (queryString != null ? "?" + queryString : "");
+        return proxyService.forwardGetRequest(request, headers);
+    }
 
+    @PostMapping("/**")
+    public ResponseEntity<String> proxyPost(
+            HttpServletRequest request,
+            @RequestHeader HttpHeaders headers,
+            @RequestBody(required = false) String body) {
+        
+        return proxyService.forwardPostRequest(request, headers, body);
+    }
+}
+
+// ============================================
+
+// ProxyService.java
+package com.example.proxy.service;
+
+import com.example.proxy.config.BackendConfig;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
+import javax.servlet.http.HttpServletRequest;
+
+@Service
+public class ProxyService {
+
+    private final BackendConfig backendConfig;
+    private final RestTemplate restTemplate;
+
+    public ProxyService(BackendConfig backendConfig, RestTemplate restTemplate) {
+        this.backendConfig = backendConfig;
+        this.restTemplate = restTemplate;
+    }
+
+    public ResponseEntity<String> forwardGetRequest(HttpServletRequest request, HttpHeaders headers) {
+        String targetUrl = buildTargetUrl(backendConfig.getEndpoints().get());
         HttpHeaders forwardHeaders = copyHeaders(headers);
         HttpEntity<Void> entity = new HttpEntity<>(forwardHeaders);
 
@@ -40,22 +71,15 @@ public class ProxyController {
                 String.class
         );
 
-        return ResponseEntity
-                .status(response.getStatusCode())
-                .headers(response.getHeaders())
-                .body(response.getBody());
+        return buildResponse(response);
     }
 
-    @PostMapping("/**")
-    public ResponseEntity<String> proxyPost(
-            HttpServletRequest request,
-            @RequestHeader HttpHeaders headers,
-            @RequestBody(required = false) String body) {
+    public ResponseEntity<String> forwardPostRequest(
+            HttpServletRequest request, 
+            HttpHeaders headers, 
+            String body) {
         
-        String path = extractPath(request);
-        String queryString = request.getQueryString();
-        String targetUrl = backendUrl + path + (queryString != null ? "?" + queryString : "");
-
+        String targetUrl = buildTargetUrl(backendConfig.getEndpoints().post());
         HttpHeaders forwardHeaders = copyHeaders(headers);
         HttpEntity<String> entity = new HttpEntity<>(body, forwardHeaders);
 
@@ -66,35 +90,47 @@ public class ProxyController {
                 String.class
         );
 
-        return ResponseEntity
-                .status(response.getStatusCode())
-                .headers(response.getHeaders())
-                .body(response.getBody());
+        return buildResponse(response);
     }
 
-    private String extractPath(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        String contextPath = request.getContextPath();
-        String proxyPath = "/api/proxy";
-        
-        if (path.startsWith(contextPath)) {
-            path = path.substring(contextPath.length());
-        }
-        if (path.startsWith(proxyPath)) {
-            path = path.substring(proxyPath.length());
-        }
-        
-        return path;
+    private String buildTargetUrl(String endpoint) {
+        String queryString = "";
+        // Query params will be added by RestTemplate from request
+        return backendConfig.basePath() + endpoint + queryString;
     }
 
     private HttpHeaders copyHeaders(HttpHeaders headers) {
         HttpHeaders forwardHeaders = new HttpHeaders();
         headers.forEach((key, value) -> {
-            // Skip host header as it will be set automatically
             if (!key.equalsIgnoreCase("host")) {
                 forwardHeaders.addAll(key, value);
             }
         });
         return forwardHeaders;
     }
+
+    private ResponseEntity<String> buildResponse(ResponseEntity<String> response) {
+        return ResponseEntity
+                .status(response.getStatusCode())
+                .headers(response.getHeaders())
+                .body(response.getBody());
+    }
+}
+
+// ============================================
+
+// BackendConfig.java
+package com.example.proxy.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "backend")
+public record BackendConfig(
+    String basePath,
+    Endpoints endpoints
+) {
+    public record Endpoints(
+        String get,
+        String post
+    ) {}
 }
